@@ -163,6 +163,11 @@ Reader/Writer ratio: %d%%\n", total_entries, peers, loops, ratio);
 
       exit(EXIT_SUCCESS); /* Child exits */
     }
+    else if (pid < 0)
+    {
+      perror("fork");
+      exit(EXIT_FAILURE);
+    }
   }
 
   /* Caller function executes from here */
