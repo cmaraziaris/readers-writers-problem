@@ -99,6 +99,11 @@ Reader/Writer ratio: %d%%\n", total_entries, peers, loops, ratio);
 
           sem_down(rd_mutex, entr); /* Gains access to the resource */
 
+          ++array[entr].curr_rdr;   /* Keep track of total readers */
+
+          if (array[entr].curr_rdr == 1) /* Block writers */
+            sem_down(wrt_sem, entr);
+
           /* Time the request was approved */
           clock_gettime(CLOCK_MONOTONIC, &end);
 
@@ -111,18 +116,13 @@ Reader/Writer ratio: %d%%\n", total_entries, peers, loops, ratio);
           }
           ttime += (long double)(sec * 10e9 + ns); /* Convert time to ns */
 
-          ++array[entr].curr_rdr;   /* Keep track of total readers */
-
-          if (array[entr].curr_rdr == 1) /* Block writers */
-            sem_down(wrt_sem, entr);
-
           sem_up(rd_mutex, entr);
           
-          ++array[entr].reads;
           sleep_exp_time(); /* Generate time using the resource */ 
 
           sem_down(rd_mutex, entr);
           
+          ++array[entr].reads;
           --array[entr].curr_rdr;
           if (array[entr].curr_rdr == 0) /* Allow writers */
             sem_up(wrt_sem, entr);
